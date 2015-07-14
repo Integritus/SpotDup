@@ -9,29 +9,7 @@
 
 	<mvc:annotation-driven />
 
-	<context:component-scan base-package="com.*" />
-
-	<bean class="org.apache.commons.dbcp.BasicDataSource" id="dataSource">
-		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
-		<property name="url"
-			value="jdbc:mysql://localhost:3306/mysqlexp" />
-			<!--  value="jdbc:mysql://mysqlexinst.c0qhs8uuwrbr.us-east-1.rds.amazonaws.com:3306/mysqlexp" />-->
-			
-		<property name="username" value="admin" />
-		<property name="password" value="pa55w0rd" />
-	</bean>
-
-	<bean
-		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
-		id="entityManagerFactory">
-		<property name="persistenceUnitName" value="persistenceUnit" />
-		<property name="dataSource" ref="dataSource" />
-	</bean>
-
-	<bean class="org.springframework.orm.jpa.JpaTransactionManager"
-		id="transactionManager">
-		<property name="entityManagerFactory" ref="entityManagerFactory" />
-	</bean>
+	<context:component-scan base-package="com.*" />	
 
 	<tx:annotation-driven />
 
