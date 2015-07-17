@@ -1,10 +1,15 @@
 package com.santitosvk.rest;
 
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import lombok.Data;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@Component
+@Scope("session")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Tokens {
 	@JsonProperty("access_token")

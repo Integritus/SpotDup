@@ -8,12 +8,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.util.URLEncoder;
 import org.apache.tomcat.util.codec.binary.Base64;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.santitosvk.rest.Playlists;
 import com.santitosvk.rest.Tokens;
 import com.santitosvk.rest.User;
 
@@ -32,17 +35,29 @@ public class ViewController {
 	static final String redirectUri = "http://localhost:8080/SpotDup/callback"; // Your redirect uri
 	
 	static final String stateKey = "spotify_auth_state";//cookie;
+	
+	@Autowired
+	private Tokens token;
+	
+	@Autowired
+	private User user;
+	
+	@Autowired
+	private RestTemplate restTemplate;
+	
+	@Autowired
+	private HttpHeaders headersBearer;
+	
 
 	
 	@RequestMapping(value = "/login", method = RequestMethod.GET)
 	public String login(@CookieValue(value = stateKey, defaultValue = "") String cookie,
 						HttpServletResponse response) {
-		//RestTemplate rest = new RestTemplate();
 		if (cookie.isEmpty()) {
 			cookie = generateRandomString(16);
 			response.addCookie(new Cookie(stateKey, cookie));
 		}
-		String scope = "user-read-private user-read-email";
+		String scope = "user-read-private";
 		UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl("https://accounts.spotify.com/authorize");
 		urlBuilder.queryParam("client_id", clientId);
 		urlBuilder.queryParam("response_type", "code");
@@ -50,12 +65,7 @@ public class ViewController {
 		urlBuilder.queryParam("state", cookie);
 		urlBuilder.queryParam("scope", scope);
 		
-		String url1 = urlBuilder.toUriString();
-		//String url2 = urlBuilder.build(true).toUriString();
-		//String url3 = urlBuilder.build(false).toUriString();
-		
-		//String r = rest.getForObject(url1, String.class);
-		 
+		String url1 = urlBuilder.toUriString();		 
 		 
  		return "redirect:" + url1;
 	}
@@ -66,9 +76,7 @@ public class ViewController {
 						   @RequestParam(value = "error", defaultValue = "") String error,
 						   @CookieValue(value = stateKey) Cookie cookie,
 						   HttpServletResponse response) {
-		String c = code;
-		String s = state;
-		String e = error;
+		
 		if(state == null || !state.equals(cookie.getValue())){
 			return "redirect:/#?error=state_mismatch";
 		} else {
@@ -88,21 +96,29 @@ public class ViewController {
 			urlBuilder.queryParam("grant_type", "authorization_code");			
 			String url1 = urlBuilder.toUriString();
 			
-			RestTemplate restTemplate = new RestTemplate();//@TODO add to spring config for autoinject
+			//RestTemplate restTemplate = new RestTemplate();//@TODO add to spring config for autoinject
 			//Get tokens in REST
 			ResponseEntity<Tokens> responseToken = restTemplate.exchange(url1, HttpMethod.POST, new HttpEntity<T>(headers), Tokens.class);
-			Tokens token = responseToken.getBody();
+			token = responseToken.getBody();
 			
-			HttpHeaders headersBearer = createHeader(token);//create header with token
+			headersBearer = createHeader(token);//create header with token
 			
 			String urlUser = "https://api.spotify.com/v1/me";//api uri for user info, only need id
 			ResponseEntity<User> responsesUser = restTemplate.exchange(urlUser, HttpMethod.GET, new HttpEntity<T>(headersBearer), User.class);
-			User user = responsesUser.getBody();
-			user.getId();
-			
-			
+			user = responsesUser.getBody();			
 		}
- 		return "helloworld";
+ 		return "redirect:/showPlaylists";
+	}
+	
+	@RequestMapping(value = "/showPlaylists", method = RequestMethod.GET)
+	public <T> String showPlaylists(Model m) {
+		
+		String urlPlaylists = "https://api.spotify.com/v1/users/" + user.getId() + "/playlists";//api uri for user playlist
+		ResponseEntity<Playlists> responsesPlaylist = restTemplate.exchange(urlPlaylists, HttpMethod.GET, new HttpEntity<T>(headersBearer), Playlists.class);
+		Playlists playlists = responsesPlaylist.getBody();
+		m.addAttribute("playlists", playlists.getItems());
+		
+ 		return "showplaylists";
 	}
 		 		 
 	private HttpHeaders createHeader(Tokens token) {

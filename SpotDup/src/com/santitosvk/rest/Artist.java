@@ -1,17 +1,27 @@
 package com.santitosvk.rest;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Component
-@Scope("session")
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class User {
+public class Artist {
+	
+	@JsonProperty("name")
+	private String name;
+	
 	@JsonProperty("id")
 	private String id;
+	
+	@JsonProperty("uri")
+	private String uri;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	public String getId() {
 		return id;
@@ -20,11 +30,15 @@ public class User {
 	public void setId(String id) {
 		this.id = id;
 	}
-	
-	@Override
-	public String toString() {
-		return "User [id=" + id + "]";
+
+	public String getUri() {
+		return uri;
 	}
 
+	public void setUri(String uri) {
+		this.uri = uri;
+	}
+	
+	
 
 }
