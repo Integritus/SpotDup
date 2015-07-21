@@ -1,22 +1,22 @@
 package com.santitosvk.rest;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Tracks extends Pagination {
+public class Track {
 	
-	@JsonProperty("items")
-	private List<Track> trackInfo;
-	
-	public List<Track> getItems() {
+	@JsonProperty("track")
+	private TrackInfo trackInfo;
+
+	public TrackInfo getTrackInfo() {
 		return trackInfo;
 	}
 
-	public void setItems(List<Track> trackInfo) {
+	public void setTrackInfo(TrackInfo trackInfo) {
 		this.trackInfo = trackInfo;
 	}
+	
+	
 
 }

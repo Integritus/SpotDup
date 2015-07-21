@@ -1,6 +1,10 @@
 package com.santitosvk.controller;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,6 +30,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.santitosvk.rest.Playlists;
 import com.santitosvk.rest.Tokens;
+import com.santitosvk.rest.TrackInfo;
+import com.santitosvk.rest.Tracks;
+import com.santitosvk.rest.Track;
 import com.santitosvk.rest.User;
 
 @Controller
@@ -57,7 +65,7 @@ public class ViewController {
 			cookie = generateRandomString(16);
 			response.addCookie(new Cookie(stateKey, cookie));
 		}
-		String scope = "user-read-private";
+		String scope = "playlist-read-private playlist-modify-public playlist-modify-private";
 		UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl("https://accounts.spotify.com/authorize");
 		urlBuilder.queryParam("client_id", clientId);
 		urlBuilder.queryParam("response_type", "code");
@@ -119,6 +127,60 @@ public class ViewController {
 		m.addAttribute("playlists", playlists.getItems());
 		
  		return "showplaylists";
+	}
+	
+	@RequestMapping(value = "/findDuplicates/{playlistId}", method = RequestMethod.GET)
+	public <T> String findDuplicates(@PathVariable String playlistId, Model m) {
+		
+		String urlPlaylists = "https://api.spotify.com/v1/users/" + user.getId() + "/playlists/" + playlistId + "/tracks";//api uri for playlist tracks
+		ResponseEntity<Tracks> responsesPlaylist = restTemplate.exchange(urlPlaylists, HttpMethod.GET, new HttpEntity<T>(headersBearer), Tracks.class);
+		Tracks tracks = responsesPlaylist.getBody();
+		
+		List<Track> trackInfo = tracks.getItems();
+		
+		while(tracks.getNext() != null){
+			responsesPlaylist = restTemplate.exchange(tracks.getNext(), HttpMethod.GET, new HttpEntity<T>(headersBearer), Tracks.class);
+			tracks = responsesPlaylist.getBody();
+			trackInfo.addAll(tracks.getItems());
+		}
+		
+		Map<String, Integer> trackCount = new HashMap<String, Integer>();
+		List<TrackInfo> duplicates = new ArrayList<TrackInfo>();
+		
+		for(Track ti : trackInfo){
+			if (!trackCount.containsKey(ti.getTrackInfo().getId())){
+				trackCount.put(ti.getTrackInfo().getId(), 1);
+			} else {
+				int count = trackCount.get(ti.getTrackInfo().getId());
+				System.out.println(count);
+				if(!(count>1)){
+					trackCount.put(ti.getTrackInfo().getId(), count+1);
+					duplicates.add(ti.getTrackInfo());
+				} 			
+			}
+		}
+		
+		for(TrackInfo ti : duplicates){
+			ResponseEntity<String> res;
+			HttpEntity<String> entity = new HttpEntity<String>("{\"tracks\": [ { \"uri\": \"" +  ti.getUri() + "\" } ] }", headersBearer);
+			System.out.println(entity.getHeaders());
+			System.out.println(entity.getBody());
+			
+			String URL = "https://api.spotify.com/v1/users/" + user.getId() + "/playlists/" + playlistId + "/tracks";
+			res = restTemplate.exchange(URL, HttpMethod.DELETE, entity, String.class);
+			System.out.println(res.getHeaders());
+			System.out.println(res.getBody());
+			
+			UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(URL);
+			urlBuilder.queryParam("uris", ti.getUri());
+			urlPlaylists = urlBuilder.toUriString();
+			res = restTemplate.exchange(urlPlaylists, HttpMethod.POST, new HttpEntity<T>(headersBearer), String.class);
+			//Tracks tracks = responsesPlaylist.getBody();
+		}
+		
+		m.addAttribute("tracks", duplicates);
+		
+ 		return "showduplicates";
 	}
 		 		 
 	private HttpHeaders createHeader(Tokens token) {

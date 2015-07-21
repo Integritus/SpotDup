@@ -33,29 +33,33 @@ table {
 </head>
 <body>
 	<div class="login">
-	<h1>Playlists</h1>
+	<h1>Duplicates</h1>
 	<table>
 		<tbody>
 
 			<c:choose>
-				<c:when test="${empty playlists}">
+				<c:when test="${empty tracks}">
 					<tr>
-						<td colspan=5>No playlists</td>
+						<td colspan=5>No duplicates</td>
 					</tr>
 				</c:when>
 				<c:otherwise>
 					<tr>
-						<td>Name</td>
-						<td></td>
-
+						<td>Name</td>						
+						<td>Artists</td>
+						<td>Album</td>
 					</tr>
 
 				</c:otherwise>
 			</c:choose>
-			<c:forEach var="p" items="${playlists}">
-				<tr>
-					<td>${p.name}</td>
-					<td><a href="${pageContext.request.contextPath}/findDuplicates/${p.id}">Find Duplicates</a></td>
+			<c:forEach var="t" items="${tracks}">
+				<tr>					
+					<td>${t.name}</td>
+					<td><c:forEach var="a" items="${t.artists}">
+						${a.name}<br>
+					</c:forEach>
+					</td>
+					<td>${t.album.name}</td>
 				</tr>
 			</c:forEach>
 		</tbody>

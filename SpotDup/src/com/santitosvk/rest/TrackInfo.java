@@ -18,13 +18,13 @@ public class TrackInfo {
 	private int duration;
 	
 	@JsonProperty("id")
-	private int id;
+	private String id;
 	
 	@JsonProperty("name")
-	private int name;
+	private String name;
 	
 	@JsonProperty("uri")
-	private int uri;
+	private String uri;
 
 	public Album getAlbum() {
 		return album;
@@ -50,27 +50,27 @@ public class TrackInfo {
 		this.duration = duration;
 	}
 
-	public int getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
-	public int getName() {
+	public String getName() {
 		return name;
 	}
 
-	public void setName(int name) {
+	public void setName(String name) {
 		this.name = name;
 	}
 
-	public int getUri() {
+	public String getUri() {
 		return uri;
 	}
 
-	public void setUri(int uri) {
+	public void setUri(String uri) {
 		this.uri = uri;
 	}
 	
