@@ -7,60 +7,97 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Playlists</title>
-<style>
-.login {
-	width: 450px;
-	padding: 20px;
-	margin: 100px auto;
-	background: #fff;
-	-webkit-border-radius: 2px;
-	-moz-border-radius: 2px;
-	border: 1px solid #000;
-}
-table, td, th {
-    border: 1px solid black;
+<title>SpotDup - A Web App to remove duplicates on your Spotify
+	playlists</title>
+<link rel="stylesheet"
+	href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+<style type="text/css">
+#login, #loggedin {
+	display: none;
 }
 
-td {
-    padding: 5px;
-}
-table {
-    border-collapse: collapse;
+.text-overflow {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	width: 500px;
 }
 </style>
 </head>
 <body>
-	<div class="login">
-	<h1>Playlists</h1>
-	<table>
-		<tbody>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-12">
+				<ul class="nav nav-pills">
+					<li class="active"><a href="#">Home</a></li>
+					<li><a href="#">Profile</a></li>
+					<li class="disabled"><a href="#">Messages</a></li>
+					<li class="dropdown pull-right"><a href="#"
+						data-toggle="dropdown" class="dropdown-toggle">Dropdown<strong
+							class="caret"></strong></a>
+						<ul class="dropdown-menu">
+							<li><a href="#">Action</a></li>
+							<li><a href="#">Another action</a></li>
+							<li><a href="#">Something else here</a></li>
+							<li class="divider"></li>
+							<li><a href="#">Separated link</a></li>
+						</ul></li>
+				</ul>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<h3 class="text-center text-primary">Your Spotify Playlists</h3>
+				<table class="table">
+					<thead>
+						<c:choose>
+							<c:when test="${empty playlists}">
+								<tr>
+									<th colspan=2>No playlists</th>
+								</tr>
+							</c:when>
+							<c:otherwise>
+								<tr>
+									<th>Name</th>
+									<th></th>
 
-			<c:choose>
-				<c:when test="${empty playlists}">
-					<tr>
-						<td colspan=5>No playlists</td>
-					</tr>
-				</c:when>
-				<c:otherwise>
-					<tr>
-						<td>Name</td>
-						<td></td>
+								</tr>
 
-					</tr>
+							</c:otherwise>
+						</c:choose>
 
-				</c:otherwise>
-			</c:choose>
-			<c:forEach var="p" items="${playlists}">
-				<tr>
-					<td>${p.name}</td>
-					<td><a href="${pageContext.request.contextPath}/findDuplicates/${p.id}">Find Duplicates</a></td>
-				</tr>
-			</c:forEach>
-		</tbody>
-	</table>	
-</div>
+					</thead>
+					<tbody>
+
+						<c:forEach var="p" items="${playlists}">
+							<tr>
+								<td>${p.name}</td>
+								<td><a
+									href="${pageContext.request.contextPath}/findDuplicates/${p.id}">Find
+										Duplicates</a></td>
+							</tr>
+						</c:forEach>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		
+		<div class="row">
+			<div class="col-md-12">
+				<div class="row">
+					<div class="col-md-6 text-center">
+					</div>
+					
+					<div class="col-md-6 text-center">
+
+						<a href="${pageContext.request.contextPath}/logout"
+					class="btn btn-primary disabled">Logout</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+	</div>
 
 </body>
 </html>

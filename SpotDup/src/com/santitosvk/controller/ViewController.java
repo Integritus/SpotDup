@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.santitosvk.rest.PlaylistInfo;
 import com.santitosvk.rest.Playlists;
 import com.santitosvk.rest.Tokens;
 import com.santitosvk.rest.TrackInfo;
@@ -124,7 +125,20 @@ public class ViewController {
 		String urlPlaylists = "https://api.spotify.com/v1/users/" + user.getId() + "/playlists";//api uri for user playlist
 		ResponseEntity<Playlists> responsesPlaylist = restTemplate.exchange(urlPlaylists, HttpMethod.GET, new HttpEntity<T>(headersBearer), Playlists.class);
 		Playlists playlists = responsesPlaylist.getBody();
-		m.addAttribute("playlists", playlists.getItems());
+		
+		List<PlaylistInfo> playlist = playlists.getItems();
+		List<PlaylistInfo> cleanPlaylist = new ArrayList<PlaylistInfo>();
+		
+		
+		for(PlaylistInfo p : playlist){
+			if(user.getId().equals(p.getOwner().getId())){
+				cleanPlaylist.add(p);
+			}
+		}
+		
+		
+		
+		m.addAttribute("playlists", cleanPlaylist);
 		
  		return "showplaylists";
 	}
@@ -162,20 +176,24 @@ public class ViewController {
 		
 		for(TrackInfo ti : duplicates){
 			ResponseEntity<String> res;
-			HttpEntity<String> entity = new HttpEntity<String>("{\"tracks\": [ { \"uri\": \"" +  ti.getUri() + "\" } ] }", headersBearer);
-			System.out.println(entity.getHeaders());
-			System.out.println(entity.getBody());
-			
+			String uri = ti.getUri();
+			HttpEntity<String> entity;
 			String URL = "https://api.spotify.com/v1/users/" + user.getId() + "/playlists/" + playlistId + "/tracks";
-			res = restTemplate.exchange(URL, HttpMethod.DELETE, entity, String.class);
-			System.out.println(res.getHeaders());
-			System.out.println(res.getBody());
 			
+			if(ti.getLinkedFrom() != null) {
+				//deleting tracks with linked from uri
+				entity = new HttpEntity<String>("{\"tracks\": [ { \"uri\": \"" +  ti.getLinkedFrom().getUri() + "\" } ] }", headersBearer);
+				res = restTemplate.exchange(URL, HttpMethod.DELETE, entity, String.class);
+			} 
+			//delting all track with uri
+			entity = new HttpEntity<String>("{\"tracks\": [ { \"uri\": \"" +  uri + "\" } ] }", headersBearer);
+			res = restTemplate.exchange(URL, HttpMethod.DELETE, entity, String.class);
+			
+			//Inserting a fresh copy of the track so we dont lose it
 			UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(URL);
-			urlBuilder.queryParam("uris", ti.getUri());
+			urlBuilder.queryParam("uris", uri);
 			urlPlaylists = urlBuilder.toUriString();
 			res = restTemplate.exchange(urlPlaylists, HttpMethod.POST, new HttpEntity<T>(headersBearer), String.class);
-			//Tracks tracks = responsesPlaylist.getBody();
 		}
 		
 		m.addAttribute("tracks", duplicates);

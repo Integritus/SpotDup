@@ -25,6 +25,10 @@ public class TrackInfo {
 	
 	@JsonProperty("uri")
 	private String uri;
+	
+	@JsonProperty("linked_from")
+	private TrackLink linkedFrom;
+	
 
 	public Album getAlbum() {
 		return album;
@@ -72,6 +76,14 @@ public class TrackInfo {
 
 	public void setUri(String uri) {
 		this.uri = uri;
+	}
+
+	public TrackLink getLinkedFrom() {
+		return linkedFrom;
+	}
+
+	public void setLinkedFrom(TrackLink linkedFrom) {
+		this.linkedFrom = linkedFrom;
 	}
 	
 	

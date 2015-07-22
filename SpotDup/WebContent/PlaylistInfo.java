@@ -9,12 +9,6 @@ public class PlaylistInfo {
 	@JsonProperty("id")
 	private String id;
 	
-	@JsonProperty("name")
-	private String name;
-	
-	@JsonProperty("owner")
-	private User owner;
-	
 	public String getId() {
 		return id;
 	}
@@ -31,13 +25,7 @@ public class PlaylistInfo {
 		this.name = name;
 	}
 
-	public User getOwner() {
-		return owner;
-	}
-
-	public void setOwner(User owner) {
-		this.owner = owner;
-	}
-
+	@JsonProperty("name")
+	private String name;
 
 }
